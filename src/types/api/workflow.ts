@@ -2,7 +2,7 @@
 
 // 工作流输出结果
 export interface WorkflowOutputs {
-  result: string[]
+  result: string | string[]
   [key: string]: any // 允许其他可能的输出字段
 }
 
