@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useI18n } from "@/i18n"
 
 export default function Home() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -8,6 +9,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [parsedResult, setParsedResult] = useState<any>(null)
+  const { t } = useI18n()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
@@ -21,12 +23,12 @@ export default function Home() {
     setParsedResult(null)
 
     if (selectedFiles.length === 0) {
-      setError("请选择至少一个文件")
+      setError(t('chooseAtLeastOneFile'))
       return
     }
 
     if (selectedFiles.length > 10) {
-      setError("一次最多上传 10 个文件")
+      setError(t('maxFiles'))
       return
     }
 
@@ -42,7 +44,7 @@ export default function Home() {
       const uploadData = await uploadRes.json()
 
       if (!uploadRes.ok) {
-        setError(uploadData.error?.message || "文件上传失败")
+        setError(uploadData.error?.message || t('uploadFailed'))
         setLoading(false)
         return
       }
@@ -61,7 +63,7 @@ export default function Home() {
       }
 
       if (ids.length === 0) {
-        setError("未能获取文件ID")
+        setError(t('noFileId'))
         setLoading(false)
         return
       }
@@ -82,40 +84,40 @@ export default function Home() {
 
       const wfData = await wfRes.json()
       if (!wfRes.ok) {
-        setError(wfData.error || "执行工作流失败")
+        setError(wfData.error || t('workflowFailed'))
         setLoading(false)
         return
       }
 
-      // 保存原始结果
+      // Save raw result
       const rawResult = wfData?.data?.outputs?.result ?? null
       setResult(rawResult)
 
-      // 解析JSON结果
+      // Parse JSON result
       if (rawResult) {
         try {
           const parsed = JSON.parse(rawResult)
           setParsedResult(parsed)
         } catch (err) {
-          console.error("解析JSON结果失败", err)
+          console.error('Failed to parse JSON result', err)
         }
       }
     } catch (err) {
       console.error(err)
-      setError("发生错误")
+      setError(t('error'))
     } finally {
       setLoading(false)
     }
   }
 
-  // 渲染整个结果
+  // Render the whole result
   const renderResult = () => {
     if (!parsedResult) return null
 
     return (
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">分析结果</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">{t('analysisResult')}</h3>
 
           {Object.entries(parsedResult).map(([category, content]: [string, any]) => (
             <div key={category} className="mb-6">
@@ -159,8 +161,8 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">文档分析系统</h1>
-          <p className="mt-2 text-gray-600">上传文档，自动提取标签和维度</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('systemTitle')}</h1>
+          <p className="mt-2 text-gray-600">{t('systemSubtitle')}</p>
         </div>
 
         <div className="bg-white shadow overflow-hidden rounded-lg">
@@ -168,7 +170,7 @@ export default function Home() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="files" className="block text-sm font-medium text-gray-700 mb-2">
-                  选择文件
+                  {t('selectFiles')}
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                   <div className="space-y-1 text-center">
@@ -191,7 +193,7 @@ export default function Home() {
                         htmlFor="file-upload"
                         className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
                       >
-                        <span>选择文件</span>
+                        <span>{t('selectFiles')}</span>
                         <input
                           id="file-upload"
                           name="file-upload"
@@ -201,14 +203,16 @@ export default function Home() {
                           onChange={handleFileChange}
                         />
                       </label>
-                      <p className="pl-1">或拖拽文件到此处</p>
+                      <p className="pl-1">{t('dragHere')}</p>
                     </div>
-                    <p className="text-xs text-gray-500">支持多种文档格式，最多10个文件</p>
+                    <p className="text-xs text-gray-500">{t('supportFormats')}</p>
                   </div>
                 </div>
                 {selectedFiles.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">已选择 {selectedFiles.length} 个文件：</p>
+                    <p className="text-sm text-gray-500">
+                      {t('selectedFiles', { count: selectedFiles.length })}
+                    </p>
                     <ul className="mt-1 text-sm text-gray-500 list-disc list-inside">
                       {selectedFiles.map((file, index) => (
                         <li key={index} className="truncate">
@@ -267,10 +271,10 @@ export default function Home() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      处理中...
+                      {t('processing')}
                     </>
                   ) : (
-                    "上传并分析"
+                    {t('uploadAnalyze')}
                   )}
                 </button>
               </div>
@@ -278,18 +282,18 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 分析结果 */}
+        {/* Analysis result */}
         {parsedResult && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">文档分析结果</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('resultTitle')}</h2>
             {renderResult()}
           </div>
         )}
 
-        {/* 如果解析失败，显示原始结果 */}
+        {/* Show raw result if JSON parsing fails */}
         {result && !parsedResult && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">处理结果</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">{t('rawResultTitle')}</h2>
             <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
               <pre className="whitespace-pre-wrap break-all text-sm overflow-auto max-h-96">
                 {result}

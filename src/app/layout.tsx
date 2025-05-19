@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import { I18nProvider } from "@/i18n"
+import LanguageSwitcher from "@/components/LanguageSwitcher"
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -12,8 +14,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="zh">
+      <body>
+        <I18nProvider>
+          <div className="p-4 text-right">
+            <LanguageSwitcher />
+          </div>
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   )
 }
